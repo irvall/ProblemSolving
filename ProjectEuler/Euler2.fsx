@@ -8,7 +8,7 @@
 let fibo =
     let rec fibo' p c sum =
         match p with
-        | x when x > int 4e6 -> sum
+        | n when n > int 4e6 -> sum
         | _ -> if p % 2 = 0 then
                 fibo' c (c+p) (p+sum) 
                else
