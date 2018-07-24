@@ -6,12 +6,13 @@
     By considering the terms in the Fibonacci sequence whose values do not exceed four million, find the sum of the even-valued terms.*)
 
 let fibo =
-    let rec fibo' p c xs =
+    let rec fibo' p c sum =
         match p with
-        | x when x > int 4e6 -> List.sum xs
+        | x when x > int 4e6 -> sum
         | _ -> if p % 2 = 0 then
-                fibo' c (c+p) (p::xs)
+                fibo' c (c+p) (p+sum) 
                else
-                fibo' c (c+p) xs
-    fibo' 1 2 []
+                fibo' c (c+p) sum
+    fibo' 1 2 0
 //val fibo : int = 4613732
+       
