@@ -7,8 +7,7 @@ char alphabet[37] = "#_23456789abcdefghijklmnopqrstuvwxyz";
 
 int rand_range(int a, int b)
 {
-	int r = rand() % (b-a);
-	return a + r;
+	return a + rand() % (b-a);;
 }
 
 void swap(char *a, char *b)
@@ -30,7 +29,7 @@ char* new_state()
 	}
 	return out;
 }
-//Shift row n times right.
+
 void shift_row(int row, int n)
 {
 	char temp[7];
@@ -39,7 +38,6 @@ void shift_row(int row, int n)
 	memcpy(alphabet+(row*6), temp, 6);
 }
 
-//Shift column n times downwards.
 void shift_col(int col, int n)
 {
 	int i,j;
@@ -52,7 +50,6 @@ void shift_col(int col, int n)
 		alphabet[i] = temp[j];
 }
 
-// Find given char and return its position [row,col]. 
 int* find(char c)
 {
 	int i, *out;
@@ -64,7 +61,6 @@ int* find(char c)
 	return out;
 }
 
-//Print string as a 6x6 matrix.
 void view_matrix(char *s)
 {
 	int i;
@@ -83,6 +79,10 @@ void decrypt_message(char *ciphertext)
 int main(int argc, char **argv)
 {
 	srand(time(NULL));
-	view_matrix(new_state());
+	char *s = new_state();
+	*alphabet = s;
+	int *k = find('#');	
+	printf("(%d,%d)\n", k[0], k[1]);
+	view_matrix(alphabet);
 	return 0;
 }
