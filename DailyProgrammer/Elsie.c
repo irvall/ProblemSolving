@@ -1,9 +1,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 char alphabet[37] = "#_23456789abcdefghijklmnopqrstuvwxyz";
 
+int rand_range(int a, int b)
+{
+	int r = rand() % (b-a);
+	return a + r;
+}
+
+void swap(char *a, char *b)
+{
+	char t = *a;
+	*a = *b;
+	*b = t;
+}
+
+char* new_state()
+{
+	int i;
+	char *out;
+	out = (char*) malloc(37 * sizeof(char));
+	memcpy(out, alphabet, 37);
+	for(i = 0; i < 36; i++) {
+		char *c = out + rand_range(i,36);
+		swap(out+i, c);
+	}
+	return out;
+}
 //Shift row n times right.
 void shift_row(int row, int n)
 {
@@ -54,8 +80,9 @@ void decrypt_message(char *ciphertext)
 {
 	//todo
 }
-
 int main(int argc, char **argv)
 {
+	srand(time(NULL));
+	view_matrix(new_state());
 	return 0;
 }
