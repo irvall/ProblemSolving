@@ -28,8 +28,7 @@ void reveal()
 	char *visited = "·";
 	for(int i = 0; i < N; i++) {
 		for(int j = 0; j < N; j++) {
-			struct nd *n = maze[i][j];
-			switch (n -> state) {
+			switch (maze[i][j] -> state) {
 				case 0:
 					printf("%c", not_visited);
 					break;
