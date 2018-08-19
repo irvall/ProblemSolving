@@ -2,9 +2,44 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <termios.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 int N;
 struct nd ***maze;
+
+void set_mode(int want_key)
+{
+	static struct termios old, new;
+	if (!want_key) {
+		tcsetattr(STDIN_FILENO, TCSANOW, &old);
+		return;
+	}
+
+	tcgetattr(STDIN_FILENO, &old);
+	new = old;
+	new.c_lflag &= ~(ICANON | ECHO);
+	tcsetattr(STDIN_FILENO, TCSANOW, &new);
+}
+
+int get_key()
+{
+	int c = 0;
+	struct timeval tv;
+	fd_set fs;
+	tv.tv_usec = tv.tv_sec = 0;
+
+	FD_ZERO(&fs);
+	FD_SET(STDIN_FILENO, &fs);
+	select(STDIN_FILENO + 1, &fs, 0, 0, &tv);
+
+	if (FD_ISSET(STDIN_FILENO, &fs)) {
+		c = getchar();
+		set_mode(0);
+	}
+	return c;
+}
 
 struct nd {
 	int state; //0- not visited, 1- visited, 2- wall, 3- player
@@ -109,35 +144,54 @@ void dig()
 	char m;
 	int start[2] 	= {rand_range(1,N-1),0};
 	int end[2]	= {rand_range(1,N-1),N-1}; 
-	struct nd *current_nd = maze[start[0]][start[1]];
+	struct nd *start_nd = maze[start[0]][start[1]];
 	struct nd *end_nd = maze[end[0]][end[1]];
+	struct nd *current_nd = start_nd;
 	visit(end_nd);	
-	set_player(current_nd);
+	set_player(start_nd);
 	reveal();
+	int c;
 	for(;;) {
+		set_mode(1);
+		while (!(c = get_key())) usleep(10000);
 		visit(current_nd);
-		scanf("%c", &m);
-		switch(m) {
-			case 'w':
-				if(up(current_nd) != NULL || visited(up(current_nd))) 
-					current_nd = up(current_nd);
-				else continue;
+		switch(c) {
+			case 'w': {
+				struct nd *tmp = up(current_nd);
+				if(tmp == NULL) continue;
+				if(tmp == start_nd || tmp == end_nd)
+					current_nd = tmp;
+				if(!outer_wall(tmp))
+					current_nd = tmp;	
 				break;
-			case 'a':
-				if(left(current_nd) != NULL || visited(left(current_nd))) 
-					current_nd = left(current_nd);
-				else continue;
+				  }
+			case 'a': {
+				struct nd *tmp = left(current_nd);
+				if(tmp == NULL) continue;
+				if(tmp == start_nd || tmp == end_nd)
+					current_nd = tmp;
+				if(!outer_wall(tmp))
+					current_nd = tmp;
 				break;
-			case 's':
-				if(down(current_nd) != NULL || visited(down(current_nd)))
-					current_nd = down(current_nd);
-				else continue;
+				  }
+			case 's': {
+				struct nd *tmp = down(current_nd);
+				if(tmp == NULL) continue;
+				if(tmp == start_nd || tmp == end_nd)
+					current_nd = tmp;
+				if(!outer_wall(tmp))
+					current_nd = tmp;
 				break;
-			case 'd':
-				if(right(current_nd) != NULL || visited(right(current_nd))) 
-					current_nd = right(current_nd);
-				else continue;
+				  }			
+			case 'd': {
+				struct nd *tmp = right(current_nd);
+				if(tmp == NULL) continue;
+				if(tmp == start_nd || tmp == end_nd)
+					current_nd = tmp;
+				if(!outer_wall(tmp))
+					current_nd = tmp;
 				break;
+				  }
 			default: continue;
 		}
 		set_player(current_nd);
@@ -160,6 +214,7 @@ void show_neighbours(struct nd *n)
 
 int main(int argc, char **argv)
 {
+		
 	srand(time(NULL));
 	N = 10;
 	maze = (struct nd***) malloc(N * N * sizeof(struct nd**));
