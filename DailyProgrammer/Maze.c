@@ -169,7 +169,6 @@ void dig()
 	struct nd *current_nd = start_nd;
 	visit(end_nd);
 	set_player(start_nd);
-	reveal();
 	for (;;)
 	{
 		visit(current_nd);
@@ -223,9 +222,9 @@ void dig()
 			continue;
 		}
 		set_player(current_nd);
-		reveal();
 		if (current_nd == end_nd)
 		{
+			reveal();
 			printf("Your winner ,'o)\n");
 			return;
 		}
@@ -248,7 +247,7 @@ void show_neighbours(struct nd *n)
 int main(int argc, char **argv)
 {
 	srand(time(NULL));
-	N = 20;
+	N = atoi(argv[1]);
 	maze = (struct nd ***)malloc(N * N * sizeof(struct nd **));
 	for (int i = 0; i < N; i++)
 	{
