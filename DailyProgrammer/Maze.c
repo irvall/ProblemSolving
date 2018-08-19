@@ -170,7 +170,6 @@ void dig()
 	visit(end_nd);
 	set_player(start_nd);
 	reveal();
-	int c;
 	for (;;)
 	{
 		visit(current_nd);
