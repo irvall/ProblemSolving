@@ -19,10 +19,10 @@
 int N;
 struct nd ***maze, *start, *goal;
 
-void clearScreen()
+void clear_screen()
 {
-  const char *CLEAR_SCREEN_ANSI = "\n\e[1;1H\e[2J";
-  write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 12);
+	const char *CLEAR_SCREEN_ANSI = "\n\e[1;1H\e[2J";
+	write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 12);
 }
 
 void set_mode(int want_key)
@@ -92,12 +92,13 @@ int outer_wall(struct nd *n)
 
 void reveal()
 {
-	clearScreen();
+	clear_screen();
 	char visited = '-';
 	char not_visited = '-';
-	char wall = '#';
+	char *wall = "Ж";
 	char player = '@';
 	char entrance = '/';
+	char *enemy_symbol = "👻";
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < N; j++)
@@ -119,10 +120,13 @@ void reveal()
 				printf("%s%c", KWHT, visited);
 				break;
 			case 2:
-				printf("%s%c", KRED, wall);
+				printf("%s%s", KRED, wall);
 				break;
 			case 3:
 				printf("%s%c", KBLU, player);
+				break;
+			case 4:
+				printf("%s%s", KRED, enemy_symbol);
 				break;
 			}
 		}
@@ -140,10 +144,14 @@ int visited(struct nd *n)
 {
 	return n->state == 1 ? 1 : 0;
 }
-
 void set_player(struct nd *n)
 {
 	n->state = 3;
+}
+
+void set_enemy(struct nd *n)
+{
+	n->state = 4;
 }
 
 struct nd *up(struct nd *n)
@@ -183,14 +191,22 @@ int is_wall(struct nd *n)
 	return n->state == 2 ? 1 : 0;
 }
 
+void make_wall(struct nd *n)
+{
+	n->state = 2;
+}
+
 void play()
 {
 	int c;
 	set_player(start);
 	struct nd *current_nd = start;
+	struct nd *enemy = maze[N/2][N/2];
+	set_enemy(enemy);
 	reveal();
 	for(;;) {
 		visit(current_nd);
+		make_wall(enemy);
 		set_mode(1);
 		while (!(c = get_key()))
 			usleep(10000);
@@ -200,7 +216,7 @@ void play()
 		{
 			struct nd *tmp = up(current_nd);
 			if (tmp == NULL || is_wall(tmp))
-				continue;
+				break;
 			if (tmp == start || tmp == goal)
 				current_nd = tmp;
 			if (!outer_wall(tmp)) 
@@ -211,7 +227,7 @@ void play()
 		{
 			struct nd *tmp = left(current_nd);
 			if (tmp == NULL || is_wall(tmp))
-				continue;
+				break;
 			if (tmp == start || tmp == goal)
 				current_nd = tmp;
 			if (!outer_wall(tmp)) 
@@ -222,7 +238,7 @@ void play()
 		{
 			struct nd *tmp = down(current_nd);
 			if (tmp == NULL || is_wall(tmp))
-				continue;
+				break;
 			if (tmp == start || tmp == goal)
 				current_nd = tmp;
 			if (!outer_wall(tmp))
@@ -233,7 +249,7 @@ void play()
 		{
 			struct nd *tmp = right(current_nd);
 			if (tmp == NULL || is_wall(tmp))
-				continue;
+				break;
 			if (tmp == start || tmp == goal)
 				current_nd = tmp;
 			if (!outer_wall(tmp))
@@ -241,9 +257,59 @@ void play()
 			break;
 		}
 		default:
-			continue;
+			break;
 		}
 		set_player(current_nd);
+		switch (rand() % 4)
+		{
+		case 0:
+		{
+			struct nd *tmp = up(enemy);
+			if (tmp == NULL || is_wall(tmp))
+				break;
+			if (tmp == start || tmp == goal)
+				enemy = tmp;
+			if (!outer_wall(tmp))
+				enemy = tmp;
+			break;
+		}
+		case 1:
+		{
+			struct nd *tmp = left(enemy);
+			if (tmp == NULL || is_wall(tmp))
+				break;
+			if (tmp == start || tmp == goal)
+				enemy = tmp;
+			if (!outer_wall(tmp))
+				enemy = tmp;
+			break;
+		}
+		case 2:
+		{
+			struct nd *tmp = down(enemy);
+			if (tmp == NULL || is_wall(tmp))
+				break;
+			if (tmp == start || tmp == goal)
+				enemy = tmp;
+			if (!outer_wall(tmp))
+				enemy = tmp;
+			break;
+		}
+		case 3:
+		{
+			struct nd *tmp = right(enemy);
+			if (tmp == NULL || is_wall(tmp))
+				break;
+			if (tmp == start || tmp == goal)
+				enemy = tmp;
+			if (!outer_wall(tmp))
+				enemy = tmp;
+			break;
+		}
+		default:
+			break;
+		}	
+		set_enemy(enemy);
 		reveal();	
 	}
 }
