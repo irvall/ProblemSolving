@@ -95,10 +95,10 @@ void reveal()
 	clear_screen();
 	char visited = '-';
 	char not_visited = '-';
-	char *wall = "Ж";
+	char *wall = "λ";
 	char player = '@';
 	char entrance = '/';
-	char *enemy_symbol = "👻";
+	char *enemy_symbol = "Ж";
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < N; j++)
@@ -196,20 +196,75 @@ void make_wall(struct nd *n)
 	n->state = 2;
 }
 
+struct nd *make_rand_move(struct nd *player)
+{
+	switch (rand() % 4)
+		{
+		case 0:
+		{
+			struct nd *tmp = up(player);
+			if (tmp == NULL || is_wall(tmp))
+				break;
+			if (tmp == start || tmp == goal)
+				player = tmp;
+			if (!outer_wall(tmp))
+				player = tmp;
+			break;
+		}
+		case 1:
+		{
+			struct nd *tmp = left(player);
+			if (tmp == NULL || is_wall(tmp))
+				break;
+			if (tmp == start || tmp == goal)
+				player = tmp;
+			if (!outer_wall(tmp))
+				player = tmp;
+			break;
+		}
+		case 2:
+		{
+			struct nd *tmp = down(player);
+			if (tmp == NULL || is_wall(tmp))
+				break;
+			if (tmp == start || tmp == goal)
+				player = tmp;
+			if (!outer_wall(tmp))
+				player = tmp;
+			break;
+		}
+		case 3:
+		{
+			struct nd *tmp = right(player);
+			if (tmp == NULL || is_wall(tmp))
+				break;
+			if (tmp == start || tmp == goal)
+				player = tmp;
+			if (!outer_wall(tmp))
+				player = tmp;
+			break;
+		}
+		default:
+			break;
+		}	
+	return player;
+}
+
 void play()
 {
-	int c;
+	int c,p;
 	set_player(start);
 	struct nd *current_nd = start;
 	struct nd *enemy = maze[N/2][N/2];
 	set_enemy(enemy);
 	reveal();
-	for(;;) {
+	for(;;usleep(500000)) {
 		visit(current_nd);
 		make_wall(enemy);
+		enemy = make_rand_move(enemy);	
+		set_enemy(enemy);
 		set_mode(1);
-		while (!(c = get_key()))
-			usleep(10000);
+		c = get_key();
 		switch (c)
 		{
 		case 'w':
@@ -260,57 +315,11 @@ void play()
 			break;
 		}
 		set_player(current_nd);
-		switch (rand() % 4)
-		{
-		case 0:
-		{
-			struct nd *tmp = up(enemy);
-			if (tmp == NULL || is_wall(tmp))
-				break;
-			if (tmp == start || tmp == goal)
-				enemy = tmp;
-			if (!outer_wall(tmp))
-				enemy = tmp;
-			break;
-		}
-		case 1:
-		{
-			struct nd *tmp = left(enemy);
-			if (tmp == NULL || is_wall(tmp))
-				break;
-			if (tmp == start || tmp == goal)
-				enemy = tmp;
-			if (!outer_wall(tmp))
-				enemy = tmp;
-			break;
-		}
-		case 2:
-		{
-			struct nd *tmp = down(enemy);
-			if (tmp == NULL || is_wall(tmp))
-				break;
-			if (tmp == start || tmp == goal)
-				enemy = tmp;
-			if (!outer_wall(tmp))
-				enemy = tmp;
-			break;
-		}
-		case 3:
-		{
-			struct nd *tmp = right(enemy);
-			if (tmp == NULL || is_wall(tmp))
-				break;
-			if (tmp == start || tmp == goal)
-				enemy = tmp;
-			if (!outer_wall(tmp))
-				enemy = tmp;
-			break;
-		}
-		default:
-			break;
-		}	
-		set_enemy(enemy);
 		reveal();	
+		if(current_nd == enemy) {
+			printf("You dedded ,'o(\n");
+			return;
+		}
 	}
 }
 
