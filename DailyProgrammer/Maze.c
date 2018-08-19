@@ -77,7 +77,7 @@ int outer_wall(struct nd *n)
 void reveal()
 {
 	char visited = '-';
-	char not_visited = ' ';
+	char not_visited = '-';
 	char wall = '#';
 	char player = '@';
 	for (int i = 0; i < N; i++)
@@ -152,9 +152,16 @@ struct nd *right(struct nd *n)
 		return n->r;
 }
 
+void play()
+{
+	int c;
+	set_mode(1);
+	while (!(c = get_key()))
+		usleep(10000);
+}
+
 void dig()
 {
-	char m;
 	int start[2] = {rand_range(1, N - 1), 0};
 	int end[2] = {rand_range(1, N - 1), N - 1};
 	struct nd *start_nd = maze[start[0]][start[1]];
@@ -166,13 +173,10 @@ void dig()
 	int c;
 	for (;;)
 	{
-		set_mode(1);
-		while (!(c = get_key()))
-			usleep(10000);
 		visit(current_nd);
-		switch (c)
+		switch (rand() % 4)
 		{
-		case 'w':
+		case 0:
 		{
 			struct nd *tmp = up(current_nd);
 			if (tmp == NULL)
@@ -183,7 +187,7 @@ void dig()
 				current_nd = tmp;
 			break;
 		}
-		case 'a':
+		case 1:
 		{
 			struct nd *tmp = left(current_nd);
 			if (tmp == NULL)
@@ -194,7 +198,7 @@ void dig()
 				current_nd = tmp;
 			break;
 		}
-		case 's':
+		case 2:
 		{
 			struct nd *tmp = down(current_nd);
 			if (tmp == NULL)
@@ -205,7 +209,7 @@ void dig()
 				current_nd = tmp;
 			break;
 		}
-		case 'd':
+		case 3:
 		{
 			struct nd *tmp = right(current_nd);
 			if (tmp == NULL)
@@ -245,7 +249,7 @@ void show_neighbours(struct nd *n)
 int main(int argc, char **argv)
 {
 	srand(time(NULL));
-	N = 10;
+	N = 20;
 	maze = (struct nd ***)malloc(N * N * sizeof(struct nd **));
 	for (int i = 0; i < N; i++)
 	{
