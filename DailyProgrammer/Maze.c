@@ -38,6 +38,7 @@ void reveal()
 					break;
 				case 2:
 					printf("%c", wall);
+					break;
 			}
 		}
 		printf("\n");
