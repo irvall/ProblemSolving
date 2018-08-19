@@ -7,7 +7,7 @@ int N;
 struct nd ***maze;
 
 struct nd {
-	int state; //0 - not visited, 1 - visited, 2 - wall, 3- player
+	int state; //0- not visited, 1- visited, 2- wall, 3- player
 	struct nd *l,*r,*u,*d;
 };
 
@@ -39,7 +39,7 @@ int outer_wall(struct nd *n)
 
 void reveal()
 {
-	char *visited = "-";
+	char visited = '-';
 	char not_visited = ' ';
 	char wall = '#';
 	char player = '@';
@@ -50,7 +50,7 @@ void reveal()
 					printf("%c", not_visited);
 					break;
 				case 1:
-					printf("%s", visited);
+					printf("%c", visited);
 					break;
 				case 2:
 					printf("%c", wall);
@@ -75,6 +75,11 @@ int visited(struct nd *n)
 	return n -> state == 1 ? 1 : 0;
 }
 
+void set_player(struct nd *n)
+{
+	n -> state = 3;
+}
+
 struct nd *up(struct nd *n) {
 	if(n -> u == NULL || outer_wall(n -> u))
 		return NULL;
@@ -97,11 +102,6 @@ struct nd *right(struct nd *n) {
 	if(n -> r == NULL || outer_wall(n -> r))
 		return NULL;
 	else return n -> r;
-}
-
-void set_player(struct nd *n)
-{
-	n -> state = 3;
 }
 
 void dig()
