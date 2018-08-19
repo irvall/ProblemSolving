@@ -5,6 +5,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #define KNRM  "\x1B[0m"
 #define KRED  "\x1B[31m"
@@ -17,6 +18,12 @@
 
 int N;
 struct nd ***maze, *start, *goal;
+
+void clearScreen()
+{
+  const char *CLEAR_SCREEN_ANSI = "\n\e[1;1H\e[2J";
+  write(STDOUT_FILENO, CLEAR_SCREEN_ANSI, 12);
+}
 
 void set_mode(int want_key)
 {
@@ -85,16 +92,23 @@ int outer_wall(struct nd *n)
 
 void reveal()
 {
+	clearScreen();
 	char visited = '-';
 	char not_visited = '-';
 	char wall = '#';
 	char player = '@';
+	char entrance = '/';
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < N; j++)
 		{
 			if(maze[i][j] == start) {
-				
+				printf("%s%c", KGRN, entrance);
+				continue;	
+			}
+			if(maze[i][j] == goal) {
+				printf("%s%c", KMAG, entrance);
+				continue;
 			}
 			switch (maze[i][j]->state)
 			{
