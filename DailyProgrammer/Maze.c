@@ -30,8 +30,9 @@ int rand_range(int a, int b)
 
 int outer_wall(struct nd *n)
 {
-	if(n -> d == NULL || n -> u == NULL 
-	|| n -> l == NULL || n -> r == NULL) 
+	if((n -> d == NULL || n -> u == NULL 
+	|| n -> l == NULL || n -> r == NULL)
+	&& n -> state == 2) 
 		return 1;
 	return 0;	
 }
@@ -118,25 +119,33 @@ void dig()
 		scanf("%c", &m);
 		switch(m) {
 			case 'w':
-				if(up(current_nd) == NULL) continue;
-				else current_nd = up(current_nd);
+				if(up(current_nd) != NULL || visited(up(current_nd))) 
+					current_nd = up(current_nd);
+				else continue;
 				break;
 			case 'a':
-				if(left(current_nd) == NULL) continue;
-				else current_nd = left(current_nd);	
+				if(left(current_nd) != NULL || visited(left(current_nd))) 
+					current_nd = left(current_nd);
+				else continue;
 				break;
 			case 's':
-				if(down(current_nd) == NULL) continue;
-				else current_nd = down(current_nd);
+				if(down(current_nd) != NULL || visited(down(current_nd)))
+					current_nd = down(current_nd);
+				else continue;
 				break;
 			case 'd':
-				if(right(current_nd) == NULL) continue;
-				else current_nd = right(current_nd);	
+				if(right(current_nd) != NULL || visited(right(current_nd))) 
+					current_nd = right(current_nd);
+				else continue;
 				break;
 			default: continue;
 		}
 		set_player(current_nd);
 		reveal();	
+		if(current_nd == end_nd) {
+			printf("Your winner ,'o)\n");
+			return;
+		}
 	}
 }
 
