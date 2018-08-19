@@ -6,8 +6,17 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#define KNRM  "\x1B[0m"
+#define KRED  "\x1B[31m"
+#define KGRN  "\x1B[32m"
+#define KYEL  "\x1B[33m"
+#define KBLU  "\x1B[34m"
+#define KMAG  "\x1B[35m"
+#define KCYN  "\x1B[36m"
+#define KWHT  "\x1B[37m"
+
 int N;
-struct nd ***maze;
+struct nd ***maze, *start, *goal;
 
 void set_mode(int want_key)
 {
@@ -84,19 +93,22 @@ void reveal()
 	{
 		for (int j = 0; j < N; j++)
 		{
+			if(maze[i][j] == start) {
+				
+			}
 			switch (maze[i][j]->state)
 			{
 			case 0:
-				printf("%c", not_visited);
+				printf("%s%c", KWHT, not_visited);
 				break;
 			case 1:
-				printf("%c", visited);
+				printf("%s%c", KWHT, visited);
 				break;
 			case 2:
-				printf("%c", wall);
+				printf("%s%c", KRED, wall);
 				break;
 			case 3:
-				printf("%c", player);
+				printf("%s%c", KBLU, player);
 				break;
 			}
 		}
@@ -152,23 +164,85 @@ struct nd *right(struct nd *n)
 		return n->r;
 }
 
+int is_wall(struct nd *n)
+{
+	return n->state == 2 ? 1 : 0;
+}
+
 void play()
 {
 	int c;
-	set_mode(1);
-	while (!(c = get_key()))
-		usleep(10000);
+	set_player(start);
+	struct nd *current_nd = start;
+	reveal();
+	for(;;) {
+		visit(current_nd);
+		set_mode(1);
+		while (!(c = get_key()))
+			usleep(10000);
+		switch (c)
+		{
+		case 'w':
+		{
+			struct nd *tmp = up(current_nd);
+			if (tmp == NULL || is_wall(tmp))
+				continue;
+			if (tmp == start || tmp == goal)
+				current_nd = tmp;
+			if (!outer_wall(tmp)) 
+				current_nd = tmp;
+			break;
+		}
+		case 'a':
+		{
+			struct nd *tmp = left(current_nd);
+			if (tmp == NULL || is_wall(tmp))
+				continue;
+			if (tmp == start || tmp == goal)
+				current_nd = tmp;
+			if (!outer_wall(tmp)) 
+				current_nd = tmp;
+			break;
+		}
+		case 's':
+		{
+			struct nd *tmp = down(current_nd);
+			if (tmp == NULL || is_wall(tmp))
+				continue;
+			if (tmp == start || tmp == goal)
+				current_nd = tmp;
+			if (!outer_wall(tmp))
+				current_nd = tmp;
+			break;
+		}
+		case 'd':
+		{
+			struct nd *tmp = right(current_nd);
+			if (tmp == NULL || is_wall(tmp))
+				continue;
+			if (tmp == start || tmp == goal)
+				current_nd = tmp;
+			if (!outer_wall(tmp))
+				current_nd = tmp;
+			break;
+		}
+		default:
+			continue;
+		}
+		set_player(current_nd);
+		reveal();	
+	}
 }
 
 void dig()
 {
-	int start[2] = {rand_range(1, N - 1), 0};
-	int end[2] = {rand_range(1, N - 1), N - 1};
-	struct nd *start_nd = maze[start[0]][start[1]];
-	struct nd *end_nd = maze[end[0]][end[1]];
-	struct nd *current_nd = start_nd;
-	visit(end_nd);
-	set_player(start_nd);
+	int s[2] = {rand_range(1, N - 1), 0};
+	int e[2] = {rand_range(1, N - 1), N - 1};
+	start	= maze[s[0]][s[1]];
+	goal	= maze[e[0]][e[1]];
+	struct nd *current_nd = start;
+	visit(goal);
+	set_player(start);
 	for (;;)
 	{
 		visit(current_nd);
@@ -179,7 +253,7 @@ void dig()
 			struct nd *tmp = up(current_nd);
 			if (tmp == NULL)
 				continue;
-			if (tmp == start_nd || tmp == end_nd)
+			if (tmp == start || tmp == goal)
 				current_nd = tmp;
 			if (!outer_wall(tmp))
 				current_nd = tmp;
@@ -190,7 +264,7 @@ void dig()
 			struct nd *tmp = left(current_nd);
 			if (tmp == NULL)
 				continue;
-			if (tmp == start_nd || tmp == end_nd)
+			if (tmp == start || tmp == goal)
 				current_nd = tmp;
 			if (!outer_wall(tmp))
 				current_nd = tmp;
@@ -201,7 +275,7 @@ void dig()
 			struct nd *tmp = down(current_nd);
 			if (tmp == NULL)
 				continue;
-			if (tmp == start_nd || tmp == end_nd)
+			if (tmp == start || tmp == goal)
 				current_nd = tmp;
 			if (!outer_wall(tmp))
 				current_nd = tmp;
@@ -212,7 +286,7 @@ void dig()
 			struct nd *tmp = right(current_nd);
 			if (tmp == NULL)
 				continue;
-			if (tmp == start_nd || tmp == end_nd)
+			if (tmp == start || tmp == goal)
 				current_nd = tmp;
 			if (!outer_wall(tmp))
 				current_nd = tmp;
@@ -222,10 +296,10 @@ void dig()
 			continue;
 		}
 		set_player(current_nd);
-		if (current_nd == end_nd)
+		if (current_nd == goal)
 		{
-			reveal();
-			printf("Your winner ,'o)\n");
+			visit(goal);
+			play();
 			return;
 		}
 	}
