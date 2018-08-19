@@ -6,16 +6,14 @@ int N;
 struct nd ***maze;
 
 struct nd {
-	int visited;
-	char symbol;
+	int state; //0 - not visited, 1 - visited, 2 - wall
 	struct nd *l,*r,*u,*d;
 };
 
 struct nd *new_nd() {
 	struct nd *t;
 	t = (struct nd*) malloc(sizeof(struct nd));
-	t -> visited = 0;
-	t -> symbol = '#';
+	t -> state = 2;
 	t -> l = NULL; 
 	t -> r = NULL; 
 	t -> u = NULL; 
@@ -25,13 +23,30 @@ struct nd *new_nd() {
 
 void reveal()
 {
+	char not_visited = ' ';
+	char wall = '#';
+	char *visited = "·";
 	for(int i = 0; i < N; i++) {
 		for(int j = 0; j < N; j++) {
-			if(maze[i][j] -> visited == 1) printf(" ");
-			else printf("%c", maze[i][j] -> symbol);
+			struct nd *n = maze[i][j];
+			switch (n -> state) {
+				case 0:
+					printf("%c", not_visited);
+					break;
+				case 1:
+					printf("%s", visited);
+					break;
+				case 2:
+					printf("%c", wall);
+			}
 		}
 		printf("\n");
 	}
+}
+
+void dig()
+{
+	//todo: dig out maze
 }
 
 int main(int argc, char **argv)
